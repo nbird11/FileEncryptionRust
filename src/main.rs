@@ -1,6 +1,12 @@
-// use encryptfile as ef;
-use std::{/*env,*/ fs, io::stdin, io::Write};
+use std::{fs, io, io::Write};
 
+/// Basic and unsafe cryptografic algorithm.
+///
+/// Takes each byte in the file and shifts it by `shift_by`.
+///
+/// Parameter `backwards: bool` will "decrypt" the given `text`, rather than "encrypting."
+///
+/// Returns the new bytes (in the form of `Vec<u8>`) of the shifted content.
 fn byte_shift(text: Vec<u8>, shift_by: u8, backwards: bool) -> Vec<u8> {
     text.iter()
         .map(|byte| {
@@ -13,59 +19,33 @@ fn byte_shift(text: Vec<u8>, shift_by: u8, backwards: bool) -> Vec<u8> {
         .collect()
 }
 
-// fn encrypt(in_file: String) {
-//     let mut c = ef::Config::new();
-//     c.input_stream(ef::InputStream::File(in_file.to_owned()));
-//     c.output_stream(ef::OutputStream::File(
-//         format!("{:#?}.ef", in_file.strip_suffix(".txt")).to_owned(),
-//     ));
-//     // c.add_output_option(ef::OutputOption::AllowOverwrite);
-//     c.initialization_vector(ef::InitializationVector::GenerateFromRng);
-//     c.password(ef::PasswordType::Text(
-//         "p@ssw0rd".to_owned(),
-//         ef::scrypt_defaults(),
-//     ));
-//     c.encrypt();
-//     let _ = ef::process(&c).map_err(|e| panic!("error encrypting: {:?}", e));
-// }
-
-// fn decrypt(from_file: String) {
-//     let mut c = ef::Config::new();
-//     c.input_stream(ef::InputStream::File(format!("{from_file}").to_owned()))
-//         .output_stream(ef::OutputStream::File(
-//             format!("{:?}.txt", from_file.strip_suffix(".ef")).to_owned(),
-//         ))
-//         .add_output_option(ef::OutputOption::AllowOverwrite)
-//         .password(ef::PasswordType::Text(
-//             "p@ssw0rd".to_owned(),
-//             ef::PasswordKeyGenMethod::ReadFromFile,
-//         ))
-//         .decrypt();
-//     let _ = ef::process(&c).map_err(|e| panic!("error decrypting: {:?}", e));
-// }
-
+/// Program main.
+///
+/// Uses menu style for getting the user's choice of encryption versus decryption.
+///
+/// TODO Make this program a command-line application rather than an infinite
+/// loop state-system.
 fn main() {
     loop {
+        // Print menu
         println!("\n\nMenu:");
         println!("  1: Encrypt local file");
         println!("  2: Decrypt local file");
         println!("  0: Quit");
+
+        // Get user choice
         println!("Your choice:");
         let mut buf = String::new();
-        stdin().read_line(&mut buf).unwrap();
-
+        io::stdin().read_line(&mut buf).unwrap();
         let input = buf.as_str().trim();
 
-        // println!("DEBUG:\tinput = {:?}", input);
-
         match input {
+            // Encrypt local file
             "1" => {
                 println!("Path of file to encrypt:");
                 let mut buf = String::new();
-                stdin().read_line(&mut buf).unwrap();
+                io::stdin().read_line(&mut buf).unwrap();
                 let trimmed_path = buf.as_str().trim();
-
-                println!("DEBUG:\tfile = {:?}", trimmed_path);
 
                 match fs::read(trimmed_path) {
                     Ok(contents) => {
@@ -74,6 +54,7 @@ fn main() {
                             .write(true)
                             .open(trimmed_path)
                             .unwrap();
+
                         if let Err(e) = new_file.write_all(&new_contents) {
                             println!("ERROR:\t{:?}", e)
                         }
@@ -83,13 +64,13 @@ fn main() {
                         println!("Could not open file `{trimmed_path}` : {e}")
                     }
                 }
-
-                // encrypt(String::from(trimmed_path));
             }
+
+            // Decrypt local file
             "2" => {
                 println!("Path of file to decrypt:");
                 let mut buf = String::new();
-                stdin().read_line(&mut buf).unwrap();
+                io::stdin().read_line(&mut buf).unwrap();
                 let trimmed_path = buf.as_str().trim();
 
                 match fs::read(trimmed_path) {
@@ -99,6 +80,7 @@ fn main() {
                             .write(true)
                             .open(trimmed_path)
                             .unwrap();
+
                         if let Err(e) = new_file.write_all(&new_contents) {
                             println!("ERROR:\t{:?}", e)
                         }
@@ -108,12 +90,14 @@ fn main() {
                         println!("Could not open file `{trimmed_path}` : {e}")
                     }
                 }
-
-                // decrypt(String::from(trimmed_path));
             }
+
+            // Quit program
             "0" => {
                 return ();
             }
+
+            // Invalid response
             _ => {
                 println!("ERROR:\tInvalid input {input}. Please try again.");
             }
