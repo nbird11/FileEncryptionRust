@@ -13,7 +13,7 @@ decrypt it (very unsecurely and lazily) using byte shifting.
 
 Here is a video demonstrating its functionality:
 
-[Lazy File Encryption in Rust - Demo]() - TODO
+[Lazy File Encryption in Rust - Demo](https://youtu.be/qgMK2szVrjY)
 
 ## Development Environment
 
